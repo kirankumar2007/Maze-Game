@@ -1,0 +1,35 @@
+body {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background-color: #f0f0f0;
+}
+#game-container {
+    text-align: center;
+}
+#maze {
+    display: inline-block;
+    border: 2px solid #333;
+}
+.cell {
+    width: 30px;
+    height: 30px;
+    display: inline-block;
+    vertical-align: top;
+}
+.wall {
+    background-color: #333;
+}
+.path {
+    background-color: #fff;
+}
+.player {
+    background-color: #f00;
+    border-radius: 50%;
+}
+.exit {
+    background-color: #0f0;
+}
