@@ -1,15 +1,26 @@
 const maze = [
-    [1, 1, 1, 1, 1, 1, 1],
-    [1, 0, 0, 0, 0, 0, 1],
-    [1, 0, 1, 1, 1, 0, 1],
-    [1, 0, 0, 0, 1, 0, 1],
-    [1, 1, 1, 0, 0, 0, 1],
-    [1, 2, 0, 0, 1, 0, 3],
-    [1, 1, 1, 1, 1, 1, 1]
+    [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+    [1, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 1],
+    [1, 0, 1, 1, 0, 1, 0, 1, 1, 0, 1, 1, 0, 1],
+    [1, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1],
+    [1, 0, 1, 0, 1, 1, 1, 1, 1, 1, 0, 1, 0, 1],
+    [1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1],
+    [1, 1, 1, 0, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1],
+    [1, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 3, 1],
+    [1, 0, 1, 0, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1],
+    [1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+    [1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1],
+    [1, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+    [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
 ];
 
 const mazeElement = document.getElementById('maze');
-let playerPosition = { x: 1, y: 5 };
+const scoreDisplay = document.getElementById('score-display');
+const movesDisplay = document.getElementById('moves-display');
+const messageDisplay = document.getElementById('message-display');
+let playerPosition = { x: 1, y: 11 };
+let score = 0;
+let moves = 0;
 
 function renderMaze() {
     mazeElement.innerHTML = '';
@@ -17,7 +28,7 @@ function renderMaze() {
         for (let x = 0; x < maze[y].length; x++) {
             const cell = document.createElement('div');
             cell.classList.add('cell');
-            
+
             if (maze[y][x] === 1) {
                 cell.classList.add('wall');
             } else if (maze[y][x] === 0) {
@@ -27,11 +38,13 @@ function renderMaze() {
             } else if (maze[y][x] === 3) {
                 cell.classList.add('exit');
             }
-            
+
             mazeElement.appendChild(cell);
         }
         mazeElement.appendChild(document.createElement('br'));
     }
+    updateScore();
+    updateMoves();
 }
 
 function movePlayer(dx, dy) {
@@ -44,11 +57,34 @@ function movePlayer(dx, dy) {
         playerPosition.y = newY;
         maze[newY][newX] = 2;
         renderMaze();
-
-        if (newX === 6 && newY === 5) {
-            alert('Congratulations! You escaped the maze!');
-        }
+        moves++;
+        checkWinCondition();
     }
+}
+
+function checkWinCondition() {
+    if (playerPosition.x === 12 && playerPosition.y === 7) {
+        score += 100;
+        messageDisplay.textContent = 'Congratulations! You escaped the maze!';
+    }
+}
+
+function resetGame() {
+    playerPosition = { x: 1, y: 11 };
+    maze[11][1] = 2;
+    maze[7][12] = 3;
+    score = 0;
+    moves = 0;
+    messageDisplay.textContent = '';
+    renderMaze();
+}
+
+function updateScore() {
+    scoreDisplay.textContent = `Score: ${score}`;
+}
+
+function updateMoves() {
+    movesDisplay.textContent = `Moves: ${moves}`;
 }
 
 document.addEventListener('keydown', (e) => {
@@ -67,5 +103,7 @@ document.addEventListener('keydown', (e) => {
             break;
     }
 });
+
+document.getElementById('reset-button').addEventListener('click', resetGame);
 
 renderMaze();

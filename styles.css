@@ -7,29 +7,57 @@ body {
     font-family: Arial, sans-serif;
     background-color: #f0f0f0;
 }
+
 #game-container {
     text-align: center;
 }
+
 #maze {
     display: inline-block;
     border: 2px solid #333;
 }
+
 .cell {
-    width: 30px;
-    height: 30px;
+    width: 25px;
+    height: 25px;
     display: inline-block;
     vertical-align: top;
 }
+
 .wall {
     background-color: #333;
 }
+
 .path {
     background-color: #fff;
 }
+
 .player {
     background-color: #f00;
     border-radius: 50%;
 }
+
 .exit {
     background-color: #0f0;
+}
+
+#reset-button {
+    margin-top: 20px;
+    padding: 10px 20px;
+    font-size: 16px;
+    cursor: pointer;
+    background-color: #333;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+}
+
+#reset-button:hover {
+    background-color: #555;
+}
+
+#score-display, #moves-display, #message-display {
+    margin: 10px 0;
+    font-size: 18px;
+    color: #333;
 }
