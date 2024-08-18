@@ -12,15 +12,15 @@ body {
     text-align: center;
 }
 
-#maze, #minimap {
+#maze {
     display: inline-block;
     border: 2px solid #333;
-    margin: 10px;
+    margin: 20px 0;
 }
 
 .cell {
-    width: 25px;
-    height: 25px;
+    width: 30px;
+    height: 30px;
     display: inline-block;
     vertical-align: top;
 }
@@ -42,40 +42,13 @@ body {
     background-color: #0f0;
 }
 
-.obstacle {
-    background-color: #ff0;
-}
-
-#reset-button {
-    margin-top: 20px;
-    padding: 10px 20px;
-    font-size: 16px;
-    cursor: pointer;
-    background-color: #333;
-    color: #fff;
-    border: none;
-    border-radius: 5px;
-}
-
-#reset-button:hover {
-    background-color: #555;
-}
-
-#score-display, #moves-display, #time-display, #message-display {
+#info {
     margin: 10px 0;
     font-size: 18px;
-    color: #333;
-}
-/* Additional CSS for new features */
-
-#high-score-display {
-    margin: 10px 0;
-    font-size: 18px;
-    color: #333;
 }
 
-#music-toggle {
-    margin-top: 20px;
+#reset-button, #next-level-button, #sound-toggle, #music-toggle {
+    margin: 5px;
     padding: 10px 20px;
     font-size: 16px;
     cursor: pointer;
@@ -85,6 +58,12 @@ body {
     border-radius: 5px;
 }
 
-#music-toggle:hover {
+#reset-button:hover, #next-level-button:hover, #sound-toggle:hover, #music-toggle:hover {
     background-color: #0056b3;
+}
+
+#message-display {
+    margin-top: 20px;
+    font-size: 20px;
+    color: #d9534f;
 }

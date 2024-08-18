@@ -1,51 +1,65 @@
-const maze = [
-    [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
-    [1, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 1],
-    [1, 0, 1, 1, 0, 1, 0, 1, 1, 0, 1, 1, 0, 1],
-    [1, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1],
-    [1, 0, 1, 0, 1, 1, 1, 1, 1, 1, 0, 1, 0, 1],
-    [1, 0, 0, 0, 0, 0, 0, 4, 0, 1, 0, 0, 0, 1],
-    [1, 1, 1, 0, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1],
-    [1, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 3, 1],
-    [1, 0, 1, 0, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1],
-    [1, 0, 1, 0, 0, 0, 0, 0, 4, 0, 0, 0, 0, 1],
-    [1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1],
-    [1, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
-    [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
+const levels = [
+    {
+        maze: [
+            [1, 1, 1, 1, 1, 1, 1],
+            [1, 0, 0, 0, 0, 0, 1],
+            [1, 0, 1, 1, 1, 0, 1],
+            [1, 0, 0, 0, 1, 0, 1],
+            [1, 1, 1, 0, 0, 0, 1],
+            [1, 2, 0, 0, 1, 0, 3],
+            [1, 1, 1, 1, 1, 1, 1]
+        ],
+        timeLimit: 60,
+        lives: 3,
+        scoreMultiplier: 1
+    },
+    {
+        maze: [
+            [1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+            [1, 0, 0, 1, 0, 0, 0, 0, 0, 1],
+            [1, 0, 1, 1, 0, 1, 1, 1, 0, 1],
+            [1, 0, 0, 0, 0, 1, 0, 0, 0, 1],
+            [1, 0, 1, 1, 1, 1, 1, 1, 0, 1],
+            [1, 0, 0, 0, 1, 0, 0, 0, 0, 1],
+            [1, 1, 1, 0, 1, 0, 1, 1, 0, 1],
+            [1, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+            [1, 0, 1, 1, 1, 1, 1, 1, 0, 1],
+            [1, 2, 0, 0, 0, 0, 0, 0, 3, 1],
+            [1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
+        ],
+        timeLimit: 50,
+        lives: 2,
+        scoreMultiplier: 2
+    },
+    // Add more levels here if desired
 ];
 
-const mazeElement = document.getElementById('maze');
-const minimapElement = document.getElementById('minimap');
-const scoreDisplay = document.getElementById('score-display');
-const movesDisplay = document.getElementById('moves-display');
-const timeDisplay = document.getElementById('time-display');
-const messageDisplay = document.getElementById('message-display');
-const highScoreDisplay = document.createElement('p');
-const musicToggle = document.createElement('button');
-let playerPosition = { x: 1, y: 11 };
+let currentLevel = 0;
+let maze = levels[currentLevel].maze;
+let playerPosition = { x: 1, y: 5 };
 let score = 0;
 let moves = 0;
 let time = 0;
-let highScore = 0;
+let lives = levels[currentLevel].lives;
 let timer;
-let musicPlaying = false;
+let soundEnabled = true;
+let musicEnabled = false;
 let moveSound = new Audio('move.mp3');
 let collisionSound = new Audio('collision.mp3');
 let backgroundMusic = new Audio('background.mp3');
 
-// Initialize high score and music toggle button
-highScoreDisplay.id = 'high-score-display';
-highScoreDisplay.textContent = `High Score: ${highScore}`;
-document.getElementById('game-container').appendChild(highScoreDisplay);
+const mazeElement = document.getElementById('maze');
+const scoreDisplay = document.getElementById('score-display');
+const movesDisplay = document.getElementById('moves-display');
+const timeDisplay = document.getElementById('time-display');
+const livesDisplay = document.getElementById('lives-display');
+const levelDisplay = document.getElementById('level-display');
+const messageDisplay = document.getElementById('message-display');
+const soundToggle = document.getElementById('sound-toggle');
+const musicToggle = document.getElementById('music-toggle');
 
-musicToggle.id = 'music-toggle';
-musicToggle.textContent = 'Toggle Music';
-document.getElementById('game-container').appendChild(musicToggle);
-
-musicToggle.addEventListener('click', toggleMusic);
-
-function renderMaze(element) {
-    element.innerHTML = '';
+function renderMaze() {
+    mazeElement.innerHTML = '';
     for (let y = 0; y < maze.length; y++) {
         for (let x = 0; x < maze[y].length; x++) {
             const cell = document.createElement('div');
@@ -59,17 +73,12 @@ function renderMaze(element) {
                 cell.classList.add('player');
             } else if (maze[y][x] === 3) {
                 cell.classList.add('exit');
-            } else if (maze[y][x] === 4) {
-                cell.classList.add('obstacle');
             }
 
-            element.appendChild(cell);
+            mazeElement.appendChild(cell);
         }
-        element.appendChild(document.createElement('br'));
+        mazeElement.appendChild(document.createElement('br'));
     }
-    updateScore();
-    updateMoves();
-    updateTime();
 }
 
 function movePlayer(dx, dy) {
@@ -77,99 +86,133 @@ function movePlayer(dx, dy) {
     const newY = playerPosition.y + dy;
 
     if (maze[newY][newX] !== 1) {
-        if (maze[newY][newX] === 4) {
-            score -= 20;
-            messageDisplay.textContent = 'Oh no! You hit an obstacle!';
-            collisionSound.play();
-        } else {
-            moveSound.play();
+        if (maze[newY][newX] === 0) {
+            score += 10 * levels[currentLevel].scoreMultiplier;
+        } else if (maze[newY][newX] === 3) {
+            score += 100 * levels[currentLevel].scoreMultiplier;
+            if (currentLevel < levels.length - 1) {
+                messageDisplay.textContent = 'Level Complete! Proceed to the next level!';
+                clearInterval(timer);
+            } else {
+                messageDisplay.textContent = 'Congratulations! You completed all levels!';
+                clearInterval(timer);
+            }
+            return;
         }
 
         maze[playerPosition.y][playerPosition.x] = 0;
         playerPosition.x = newX;
         playerPosition.y = newY;
         maze[newY][newX] = 2;
-        renderMaze(mazeElement);
-        renderMaze(minimapElement);
         moves++;
-        checkWinCondition();
-    }
-}
+        renderMaze();
 
-function checkWinCondition() {
-    if (playerPosition.x === 12 && playerPosition.y === 7) {
-        clearInterval(timer);
-        score += Math.max(100 - time, 0);
-        if (score > highScore) {
-            highScore = score;
-            highScoreDisplay.textContent = `High Score: ${highScore}`;
+        if (soundEnabled) {
+            moveSound.play();
         }
-        messageDisplay.textContent = 'Congratulations! You escaped the maze!';
-    }
-}
-
-function toggleMusic() {
-    if (musicPlaying) {
-        backgroundMusic.pause();
-        musicPlaying = false;
     } else {
-        backgroundMusic.loop = true;
-        backgroundMusic.play();
-        musicPlaying = true;
+        if (soundEnabled) {
+            collisionSound.play();
+        }
+        lives--;
+        livesDisplay.textContent = `Lives: ${lives}`;
+        if (lives === 0) {
+            messageDisplay.textContent = 'Game Over!';
+            clearInterval(timer);
+        }
     }
+
+    updateUI();
 }
 
-function resetGame() {
-    playerPosition = { x: 1, y: 11 };
-    maze[11][1] = 2;
-    maze[7][12] = 3;
-    score = 0;
-    moves = 0;
-    time = 0;
-    messageDisplay.textContent = '';
-    clearInterval(timer);
-    startTimer();
-    renderMaze(mazeElement);
-    renderMaze(minimapElement);
-}
-
-function updateScore() {
+function updateUI() {
     scoreDisplay.textContent = `Score: ${score}`;
-}
-
-function updateMoves() {
     movesDisplay.textContent = `Moves: ${moves}`;
-}
-
-function updateTime() {
-    timeDisplay.textContent = `Time: ${time}s`;
+    levelDisplay.textContent = `Level: ${currentLevel + 1}`;
 }
 
 function startTimer() {
+    time = levels[currentLevel].timeLimit;
+    timeDisplay.textContent = `Time: ${time}s`;
     timer = setInterval(() => {
-        time++;
-        updateTime();
+        time--;
+        timeDisplay.textContent = `Time: ${time}s`;
+        if (time === 0) {
+            clearInterval(timer);
+            messageDisplay.textContent = 'Time\'s up! Game Over!';
+        }
     }, 1000);
 }
 
-document.addEventListener('keydown', (e) => {
-    switch (e.key) {
-        case 'ArrowUp':
-            movePlayer(0, -1);
-            break;
-        case 'ArrowDown':
-            movePlayer(0, 1);
-            break;
-        case 'ArrowLeft':
-            movePlayer(-1, 0);
-            break;
-        case 'ArrowRight':
-            movePlayer(1, 0);
-            break;
+function resetGame() {
+    currentLevel = 0;
+    maze = levels[currentLevel].maze;
+    playerPosition = { x: 1, y: 5 };
+    score = 0;
+    moves = 0;
+    lives = levels[currentLevel].lives;
+    messageDisplay.textContent = '';
+    clearInterval(timer);
+    startTimer();
+    renderMaze();
+    updateUI();
+}
+
+function nextLevel() {
+    if (currentLevel < levels.length - 1) {
+        currentLevel++;
+        maze = levels[currentLevel].maze;
+        playerPosition = { x: 1, y: 5 };
+        moves = 0;
+        lives = levels[currentLevel].lives;
+        messageDisplay.textContent = '';
+        clearInterval(timer);
+        startTimer();
+        renderMaze();
+        updateUI();
+    }
+}
+
+document.addEventListener('keydown', (event) => {
+    if (event.key === 'ArrowUp') {
+        movePlayer(0, -1);
+    } else if (event.key === 'ArrowDown') {
+        movePlayer(0, 1);
+    } else if (event.key === 'ArrowLeft') {
+       
+        movePlayer(-1, 0);
+    } else if (event.key === 'ArrowRight') {
+        movePlayer(1, 0);
     }
 });
 
 document.getElementById('reset-button').addEventListener('click', resetGame);
+document.getElementById('next-level-button').addEventListener('click', nextLevel);
+document.getElementById('sound-toggle').addEventListener('click', () => {
+    soundEnabled = !soundEnabled;
+    document.getElementById('sound-toggle').textContent = soundEnabled ? 'Mute Sound' : 'Unmute Sound';
+});
 
-resetGame();
-startTimer();
+document.getElementById('music-toggle').addEventListener('click', () => {
+    musicEnabled = !musicEnabled;
+    if (musicEnabled) {
+        backgroundMusic.loop = true;
+        backgroundMusic.play();
+        document.getElementById('music-toggle').textContent = 'Mute Music';
+    } else {
+        backgroundMusic.pause();
+        document.getElementById('music-toggle').textContent = 'Unmute Music';
+    }
+});
+
+function initializeGame() {
+    renderMaze();
+    updateUI();
+    startTimer();
+    if (musicEnabled) {
+        backgroundMusic.loop = true;
+        backgroundMusic.play();
+    }
+}
+
+initializeGame();

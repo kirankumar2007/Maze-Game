@@ -10,13 +10,19 @@
     <div id="game-container">
         <h1>Maze Escape Game</h1>
         <div id="maze"></div>
-        <div id="minimap"></div>
+        <div id="info">
+            <p id="score-display">Score: 0</p>
+            <p id="moves-display">Moves: 0</p>
+            <p id="time-display">Time: 0s</p>
+            <p id="lives-display">Lives: 3</p>
+            <p id="level-display">Level: 1</p>
+        </div>
         <p>Use arrow keys to move. Reach the green exit to win!</p>
-        <p id="score-display">Score: 0</p>
-        <p id="moves-display">Moves: 0</p>
-        <p id="time-display">Time: 0s</p>
-        <p id="message-display"></p>
         <button id="reset-button">Reset Game</button>
+        <button id="next-level-button">Next Level</button>
+        <button id="sound-toggle">Toggle Sound</button>
+        <button id="music-toggle">Toggle Music</button>
+        <div id="message-display"></div>
     </div>
     <script src="script.js"></script>
 </body>
