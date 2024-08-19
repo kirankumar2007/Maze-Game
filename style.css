@@ -4,25 +4,42 @@ body {
     align-items: center;
     height: 100vh;
     margin: 0;
-    font-family: Arial, sans-serif;
-    background-color: #f0f0f0;
+    font-family: 'Verdana', sans-serif;
+    background-color: #e0e0e0;
+    background-image: linear-gradient(135deg, #f0f0f0 25%, #d0d0d0 75%);
 }
 
 #game-container {
     text-align: center;
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 12px;
+    box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+#controls button {
+    margin: 5px;
+    padding: 10px 15px;
+    font-size: 16px;
+    border-radius: 8px;
+    border: none;
+    background-color: #4CAF50;
+    color: white;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+#controls button:hover {
+    background-color: #45a049;
 }
 
 #maze {
     display: inline-block;
     border: 2px solid #333;
-}
-
-#controls button {
-    margin: 5px;
-}
-
-#info {
-    margin-top: 10px;
+    margin-bottom: 10px;
+    padding: 5px;
+    background-color: #fafafa;
+    border-radius: 10px;
 }
 
 .cell {
@@ -30,10 +47,16 @@ body {
     height: 30px;
     display: inline-block;
     vertical-align: top;
+    transition: background-color 0.3s ease, transform 0.3s ease;
+}
+
+.cell:hover {
+    transform: scale(1.1);
 }
 
 .wall {
     background-color: #333;
+    border-radius: 4px;
 }
 
 .path {
@@ -43,21 +66,20 @@ body {
 .player {
     background-color: #f00;
     border-radius: 50%;
-    transition: all 0.2s ease;
 }
 
 .exit {
     background-color: #0f0;
-}
-
-.trap {
-    background-color: #ff0;
+    border-radius: 50%;
 }
 
 #mini-map {
     margin-top: 20px;
     display: inline-block;
     border: 2px solid #333;
+    padding: 5px;
+    background-color: #e6e6e6;
+    border-radius: 10px;
 }
 
 .mini-cell {
@@ -66,10 +88,29 @@ body {
     display: inline-block;
 }
 
+.mini-wall {
+    background-color: #555;
+}
+
 .mini-player {
     background-color: #f00;
 }
 
 .mini-exit {
     background-color: #0f0;
+}
+
+#score-display, #moves-display, #time-display, #level-display, #lives-display {
+    font-size: 18px;
+    margin: 5px 0;
+}
+
+#message-display {
+    font-size: 18px;
+    color: #f44336;
+    font-weight: bold;
+}
+
+#message-display.success {
+    color: #4CAF50;
 }

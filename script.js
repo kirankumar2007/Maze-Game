@@ -83,7 +83,7 @@ function renderMiniMap() {
             miniCell.classList.add('mini-cell');
 
             if (maze[y][x] === 1) {
-                miniCell.classList.add('wall');
+                miniCell.classList.add('mini-wall');
             } else if (maze[y][x] === 2) {
                 miniCell.classList.add('mini-player');
             } else if (maze[y][x] === 3) {
@@ -101,138 +101,101 @@ function movePlayer(dx, dy) {
     const newY = playerPosition.y + dy;
 
     if (maze[newY][newX] !== 1) {
-        if (maze[newY][newX] === 4) {
-            lives--;
-            livesDisplay.textContent = `Lives: ${lives}`;
-            if (lives === 0) {
-                messageDisplay.textContent = 'Game Over!';
-                clearInterval(timer);
-                return;
-            }
-        }
-        maze[playerPosition.y][playerPosition.x] = 0;
-        playerPosition.x = newX;
-        playerPosition.y = newY;
-        maze[newY][newX] = 2;
-        moves++;
-        renderMaze();
-        updateUI();
-
-        if (newX === levels[currentLevel].maze[0].length - 2 && newY === levels[currentLevel].maze.length - 2) {
+        if (maze[newY][newX] === 3) {
             score += 100;
-            alert('Congratulations! You escaped the maze!');
+            moves++;
             nextLevel();
+        } else {
+            maze[playerPosition.y][playerPosition.x] = 0;
+            playerPosition.x = newX;
+            playerPosition.y = newY;
+            maze[playerPosition.y][playerPosition.x] = 2;
+            score += 10;
+            moves++;
+            renderMaze();
         }
     }
-}
 
-function updateUI() {
     scoreDisplay.textContent = `Score: ${score}`;
     movesDisplay.textContent = `Moves: ${moves}`;
     timeDisplay.textContent = `Time: ${time}s`;
     livesDisplay.textContent = `Lives: ${lives}`;
-    levelDisplay.textContent = `Level: ${currentLevel + 1}`;
 }
 
-function startTimer() {
-    time = levels[currentLevel].timeLimit;
-    timeDisplay.textContent = `Time: ${time}s`;
-    timer = setInterval(() => {
-        time--;
-        timeDisplay.textContent = `Time: ${time}s`;
-        if (time === 0) {
-            clearInterval(timer);
-            messageDisplay.textContent = 'Time\'s up! Game Over!';
-        }
-    }, 1000);
+function nextLevel() {
+    currentLevel++;
+    if (currentLevel < levels.length) {
+        maze = levels[currentLevel].maze;
+        playerPosition = { x: 1, y: 5 };
+        scoreDisplay.textContent = `Score: ${score}`;
+        movesDisplay.textContent = `Moves: ${moves}`;
+        levelDisplay.textContent = `Level: ${currentLevel + 1}`;
+        livesDisplay.textContent = `Lives: ${lives}`;
+        time = levels[currentLevel].timeLimit;
+        renderMaze();
+        messageDisplay.textContent = 'Level Up!';
+    } else {
+        messageDisplay.textContent = 'Congratulations! You completed all levels!';
+        clearInterval(timer);
+    }
 }
 
 function resetGame() {
     currentLevel = 0;
-    lives = levels[currentLevel].lives;
+    maze = levels[currentLevel].maze;
+    playerPosition = { x: 1, y: 5 };
     score = 0;
     moves = 0;
-    maze = levels[currentLevel].maze;
-    playerPosition = { x: 1, y: maze.length - 2 };
+    lives = levels[currentLevel].lives;
+    time = levels[currentLevel].timeLimit;
     renderMaze();
-    updateUI();
-    startTimer();
-    messageDisplay.textContent = '';
+    messageDisplay.textContent = 'Game reset!';
+    timer = setInterval(updateTime, 1000);
 }
 
-function nextLevel() {
-    if (currentLevel < levels.length - 1) {
-        currentLevel++;
-        lives = levels[currentLevel].lives;
-        maze = levels[currentLevel].maze;
-        playerPosition = { x: 1, y: maze.length - 2 };
-        renderMaze();
-        updateUI();
-        startTimer();
-        messageDisplay.textContent = '';
-    } else {
-        alert('You completed all levels!');
+function updateTime() {
+    time--;
+    timeDisplay.textContent = `Time: ${time}s`;
+
+    if (time <= 0) {
+        lives--;
+        if (lives > 0) {
+            resetGame();
+            messageDisplay.textContent = 'Out of time! Try again.';
+        } else {
+            messageDisplay.textContent = 'Game Over!';
+            clearInterval(timer);
+        }
     }
 }
 
-function pauseGame() {
-    clearInterval(timer);
-    document.getElementById('pause-button').style.display = 'none';
-    document.getElementById('resume-button').style.display = 'inline-block';
+function toggleSound() {
+    soundEnabled = !soundEnabled;
+    document.getElementById('sound-toggle').textContent = soundEnabled ? 'Mute Sound' : 'Unmute Sound';
 }
 
-function resumeGame() {
-    startTimer();
-    document.getElementById('pause-button').style.display = 'inline-block';
-    document.getElementById('resume-button').style.display = 'none';
-}
-
-function showHint() {
-    alert('Hint: Follow the path that doesn\'t hit a wall!');
+function toggleMusic() {
+    musicEnabled = !musicEnabled;
+    if (musicEnabled) {
+        backgroundMusic.play();
+    } else {
+        backgroundMusic.pause();
+    }
+    document.getElementById('music-toggle').textContent = musicEnabled ? 'Mute Music' : 'Unmute Music';
 }
 
 document.addEventListener('keydown', (event) => {
-    if (event.key === 'ArrowUp') {
-        movePlayer(0, -1);
-    } else if (event.key === 'ArrowDown') {
-        movePlayer(0, 1);
-    } else if (event.key === 'ArrowLeft') {
-        movePlayer(-1, 0);
-    } else if (event.key === 'ArrowRight') {
-        movePlayer(1, 0);
-    }
+    if (event.key === 'ArrowUp') movePlayer(0, -1);
+    if (event.key === 'ArrowDown') movePlayer(0, 1);
+    if (event.key === 'ArrowLeft') movePlayer(-1, 0);
+    if (event.key === 'ArrowRight') movePlayer(1, 0);
 });
 
 document.getElementById('reset-button').addEventListener('click', resetGame);
 document.getElementById('next-level-button').addEventListener('click', nextLevel);
-document.getElementById('pause-button').addEventListener('click', pauseGame);
-document.getElementById('resume-button').addEventListener('click', resumeGame);
-document.getElementById('hint-button').addEventListener('click', showHint);
-document.getElementById('sound-toggle').addEventListener('click', () => {
-    soundEnabled = !soundEnabled;
-    document.getElementById('sound-toggle').textContent = soundEnabled ? 'Mute Sound' : 'Unmute Sound';
-});
+document.getElementById('pause-button').addEventListener('click', () => clearInterval(timer));
+document.getElementById('resume-button').addEventListener('click', () => timer = setInterval(updateTime, 1000));
+document.getElementById('sound-toggle').addEventListener('click', toggleSound);
+document.getElementById('music-toggle').addEventListener('click', toggleMusic);
 
-document.getElementById('music-toggle').addEventListener('click', () => {
-    musicEnabled = !musicEnabled;
-    if (musicEnabled) {
-        backgroundMusic.loop = true;
-        backgroundMusic.play();
-        document.getElementById('music-toggle').textContent = 'Mute Music';
-    } else {
-        backgroundMusic.pause();
-        document.getElementById('music-toggle').textContent = 'Unmute Music';
-    }
-});
-
-function initializeGame() {
-    renderMaze();
-    updateUI();
-    startTimer();
-    if (musicEnabled) {
-        backgroundMusic.loop = true;
-        backgroundMusic.play();
-    }
-}
-
-initializeGame();
+resetGame();
