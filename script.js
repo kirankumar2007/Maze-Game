@@ -9,29 +9,23 @@ const levels = [
             [1, 2, 0, 0, 1, 0, 3],
             [1, 1, 1, 1, 1, 1, 1]
         ],
-        timeLimit: 60,
         lives: 3,
-        scoreMultiplier: 1
+        timeLimit: 30
     },
     {
         maze: [
-            [1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
-            [1, 0, 0, 1, 0, 0, 0, 0, 0, 1],
-            [1, 0, 1, 1, 0, 1, 1, 1, 0, 1],
-            [1, 0, 0, 0, 0, 1, 0, 0, 0, 1],
-            [1, 0, 1, 1, 1, 1, 1, 1, 0, 1],
-            [1, 0, 0, 0, 1, 0, 0, 0, 0, 1],
-            [1, 1, 1, 0, 1, 0, 1, 1, 0, 1],
-            [1, 0, 0, 0, 0, 0, 0, 0, 0, 1],
-            [1, 0, 1, 1, 1, 1, 1, 1, 0, 1],
-            [1, 2, 0, 0, 0, 0, 0, 0, 3, 1],
-            [1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
+            [1, 1, 1, 1, 1, 1, 1, 1],
+            [1, 0, 0, 0, 1, 0, 0, 1],
+            [1, 0, 1, 0, 1, 0, 1, 1],
+            [1, 0, 1, 0, 0, 0, 0, 1],
+            [1, 0, 1, 1, 1, 1, 0, 1],
+            [1, 0, 0, 0, 0, 1, 3, 1],
+            [1, 2, 1, 0, 1, 0, 0, 1],
+            [1, 1, 1, 1, 1, 1, 1, 1]
         ],
-        timeLimit: 50,
-        lives: 2,
-        scoreMultiplier: 2
-    },
-    // Add more levels here if desired
+        lives: 3,
+        timeLimit: 45
+    }
 ];
 
 let currentLevel = 0;
@@ -39,26 +33,23 @@ let maze = levels[currentLevel].maze;
 let playerPosition = { x: 1, y: 5 };
 let score = 0;
 let moves = 0;
-let time = 0;
 let lives = levels[currentLevel].lives;
-let timer;
+let time = levels[currentLevel].timeLimit;
 let soundEnabled = true;
-let musicEnabled = false;
-let moveSound = new Audio('move.mp3');
-let collisionSound = new Audio('collision.mp3');
-let backgroundMusic = new Audio('background.mp3');
+let musicEnabled = true;
+let timer;
 
-const mazeElement = document.getElementById('maze');
 const scoreDisplay = document.getElementById('score-display');
 const movesDisplay = document.getElementById('moves-display');
 const timeDisplay = document.getElementById('time-display');
-const livesDisplay = document.getElementById('lives-display');
 const levelDisplay = document.getElementById('level-display');
+const livesDisplay = document.getElementById('lives-display');
 const messageDisplay = document.getElementById('message-display');
-const soundToggle = document.getElementById('sound-toggle');
-const musicToggle = document.getElementById('music-toggle');
+const miniMapElement = document.getElementById('mini-map');
+const backgroundMusic = new Audio('background-music.mp3');
 
 function renderMaze() {
+    const mazeElement = document.getElementById('maze');
     mazeElement.innerHTML = '';
     for (let y = 0; y < maze.length; y++) {
         for (let x = 0; x < maze[y].length; x++) {
@@ -73,11 +64,35 @@ function renderMaze() {
                 cell.classList.add('player');
             } else if (maze[y][x] === 3) {
                 cell.classList.add('exit');
+            } else if (maze[y][x] === 4) {
+                cell.classList.add('trap');
             }
 
             mazeElement.appendChild(cell);
         }
         mazeElement.appendChild(document.createElement('br'));
+    }
+    renderMiniMap();
+}
+
+function renderMiniMap() {
+    miniMapElement.innerHTML = '';
+    for (let y = 0; y < maze.length; y++) {
+        for (let x = 0; x < maze[y].length; x++) {
+            const miniCell = document.createElement('div');
+            miniCell.classList.add('mini-cell');
+
+            if (maze[y][x] === 1) {
+                miniCell.classList.add('wall');
+            } else if (maze[y][x] === 2) {
+                miniCell.classList.add('mini-player');
+            } else if (maze[y][x] === 3) {
+                miniCell.classList.add('mini-exit');
+            }
+
+            miniMapElement.appendChild(miniCell);
+        }
+        miniMapElement.appendChild(document.createElement('br'));
     }
 }
 
@@ -86,48 +101,36 @@ function movePlayer(dx, dy) {
     const newY = playerPosition.y + dy;
 
     if (maze[newY][newX] !== 1) {
-        if (maze[newY][newX] === 0) {
-            score += 10 * levels[currentLevel].scoreMultiplier;
-        } else if (maze[newY][newX] === 3) {
-            score += 100 * levels[currentLevel].scoreMultiplier;
-            if (currentLevel < levels.length - 1) {
-                messageDisplay.textContent = 'Level Complete! Proceed to the next level!';
+        if (maze[newY][newX] === 4) {
+            lives--;
+            livesDisplay.textContent = `Lives: ${lives}`;
+            if (lives === 0) {
+                messageDisplay.textContent = 'Game Over!';
                 clearInterval(timer);
-            } else {
-                messageDisplay.textContent = 'Congratulations! You completed all levels!';
-                clearInterval(timer);
+                return;
             }
-            return;
         }
-
         maze[playerPosition.y][playerPosition.x] = 0;
         playerPosition.x = newX;
         playerPosition.y = newY;
         maze[newY][newX] = 2;
         moves++;
         renderMaze();
+        updateUI();
 
-        if (soundEnabled) {
-            moveSound.play();
-        }
-    } else {
-        if (soundEnabled) {
-            collisionSound.play();
-        }
-        lives--;
-        livesDisplay.textContent = `Lives: ${lives}`;
-        if (lives === 0) {
-            messageDisplay.textContent = 'Game Over!';
-            clearInterval(timer);
+        if (newX === levels[currentLevel].maze[0].length - 2 && newY === levels[currentLevel].maze.length - 2) {
+            score += 100;
+            alert('Congratulations! You escaped the maze!');
+            nextLevel();
         }
     }
-
-    updateUI();
 }
 
 function updateUI() {
     scoreDisplay.textContent = `Score: ${score}`;
     movesDisplay.textContent = `Moves: ${moves}`;
+    timeDisplay.textContent = `Time: ${time}s`;
+    livesDisplay.textContent = `Lives: ${lives}`;
     levelDisplay.textContent = `Level: ${currentLevel + 1}`;
 }
 
@@ -146,31 +149,46 @@ function startTimer() {
 
 function resetGame() {
     currentLevel = 0;
-    maze = levels[currentLevel].maze;
-    playerPosition = { x: 1, y: 5 };
+    lives = levels[currentLevel].lives;
     score = 0;
     moves = 0;
-    lives = levels[currentLevel].lives;
-    messageDisplay.textContent = '';
-    clearInterval(timer);
-    startTimer();
+    maze = levels[currentLevel].maze;
+    playerPosition = { x: 1, y: maze.length - 2 };
     renderMaze();
     updateUI();
+    startTimer();
+    messageDisplay.textContent = '';
 }
 
 function nextLevel() {
     if (currentLevel < levels.length - 1) {
         currentLevel++;
-        maze = levels[currentLevel].maze;
-        playerPosition = { x: 1, y: 5 };
-        moves = 0;
         lives = levels[currentLevel].lives;
-        messageDisplay.textContent = '';
-        clearInterval(timer);
-        startTimer();
+        maze = levels[currentLevel].maze;
+        playerPosition = { x: 1, y: maze.length - 2 };
         renderMaze();
         updateUI();
+        startTimer();
+        messageDisplay.textContent = '';
+    } else {
+        alert('You completed all levels!');
     }
+}
+
+function pauseGame() {
+    clearInterval(timer);
+    document.getElementById('pause-button').style.display = 'none';
+    document.getElementById('resume-button').style.display = 'inline-block';
+}
+
+function resumeGame() {
+    startTimer();
+    document.getElementById('pause-button').style.display = 'inline-block';
+    document.getElementById('resume-button').style.display = 'none';
+}
+
+function showHint() {
+    alert('Hint: Follow the path that doesn\'t hit a wall!');
 }
 
 document.addEventListener('keydown', (event) => {
@@ -179,7 +197,6 @@ document.addEventListener('keydown', (event) => {
     } else if (event.key === 'ArrowDown') {
         movePlayer(0, 1);
     } else if (event.key === 'ArrowLeft') {
-       
         movePlayer(-1, 0);
     } else if (event.key === 'ArrowRight') {
         movePlayer(1, 0);
@@ -188,6 +205,9 @@ document.addEventListener('keydown', (event) => {
 
 document.getElementById('reset-button').addEventListener('click', resetGame);
 document.getElementById('next-level-button').addEventListener('click', nextLevel);
+document.getElementById('pause-button').addEventListener('click', pauseGame);
+document.getElementById('resume-button').addEventListener('click', resumeGame);
+document.getElementById('hint-button').addEventListener('click', showHint);
 document.getElementById('sound-toggle').addEventListener('click', () => {
     soundEnabled = !soundEnabled;
     document.getElementById('sound-toggle').textContent = soundEnabled ? 'Mute Sound' : 'Unmute Sound';

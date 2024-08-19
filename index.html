@@ -4,25 +4,31 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Maze Escape Game</title>
-    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <div id="game-container">
         <h1>Maze Escape Game</h1>
-        <div id="maze"></div>
+        <div id="controls">
+            <button id="reset-button">Reset Game</button>
+            <button id="next-level-button">Next Level</button>
+            <button id="pause-button">Pause</button>
+            <button id="resume-button" style="display: none;">Resume</button>
+            <button id="hint-button">Show Hint</button>
+            <button id="sound-toggle">Mute Sound</button>
+            <button id="music-toggle">Mute Music</button>
+        </div>
         <div id="info">
             <p id="score-display">Score: 0</p>
             <p id="moves-display">Moves: 0</p>
             <p id="time-display">Time: 0s</p>
-            <p id="lives-display">Lives: 3</p>
             <p id="level-display">Level: 1</p>
+            <p id="lives-display">Lives: 3</p>
         </div>
+        <div id="maze"></div>
+        <div id="mini-map"></div>
         <p>Use arrow keys to move. Reach the green exit to win!</p>
-        <button id="reset-button">Reset Game</button>
-        <button id="next-level-button">Next Level</button>
-        <button id="sound-toggle">Toggle Sound</button>
-        <button id="music-toggle">Toggle Music</button>
-        <div id="message-display"></div>
+        <p id="message-display"></p>
     </div>
     <script src="script.js"></script>
 </body>

@@ -15,7 +15,14 @@ body {
 #maze {
     display: inline-block;
     border: 2px solid #333;
-    margin: 20px 0;
+}
+
+#controls button {
+    margin: 5px;
+}
+
+#info {
+    margin-top: 10px;
 }
 
 .cell {
@@ -36,34 +43,33 @@ body {
 .player {
     background-color: #f00;
     border-radius: 50%;
+    transition: all 0.2s ease;
 }
 
 .exit {
     background-color: #0f0;
 }
 
-#info {
-    margin: 10px 0;
-    font-size: 18px;
+.trap {
+    background-color: #ff0;
 }
 
-#reset-button, #next-level-button, #sound-toggle, #music-toggle {
-    margin: 5px;
-    padding: 10px 20px;
-    font-size: 16px;
-    cursor: pointer;
-    background-color: #007BFF;
-    color: #fff;
-    border: none;
-    border-radius: 5px;
-}
-
-#reset-button:hover, #next-level-button:hover, #sound-toggle:hover, #music-toggle:hover {
-    background-color: #0056b3;
-}
-
-#message-display {
+#mini-map {
     margin-top: 20px;
-    font-size: 20px;
-    color: #d9534f;
+    display: inline-block;
+    border: 2px solid #333;
+}
+
+.mini-cell {
+    width: 10px;
+    height: 10px;
+    display: inline-block;
+}
+
+.mini-player {
+    background-color: #f00;
+}
+
+.mini-exit {
+    background-color: #0f0;
 }
