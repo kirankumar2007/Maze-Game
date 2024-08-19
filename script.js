@@ -25,12 +25,26 @@ const levels = [
         ],
         lives: 3,
         timeLimit: 45
+    },
+    {
+        maze: [
+            [1, 1, 1, 1, 1, 1, 1, 1, 1],
+            [1, 0, 0, 0, 1, 0, 0, 0, 1],
+            [1, 0, 1, 0, 1, 1, 1, 0, 1],
+            [1, 0, 1, 0, 0, 0, 1, 0, 1],
+            [1, 0, 1, 1, 1, 0, 1, 0, 1],
+            [1, 0, 0, 0, 0, 0, 1, 3, 1],
+            [1, 2, 1, 1, 1, 0, 0, 1],
+            [1, 1, 1, 1, 1, 1, 1, 1, 1]
+        ],
+        lives: 2,
+        timeLimit: 60
     }
 ];
 
 let currentLevel = 0;
 let maze = levels[currentLevel].maze;
-let playerPosition = { x: 1, y: 5 };
+let playerPosition = { x: 1, y: maze.length - 2 };
 let score = 0;
 let moves = 0;
 let lives = levels[currentLevel].lives;
@@ -38,6 +52,7 @@ let time = levels[currentLevel].timeLimit;
 let soundEnabled = true;
 let musicEnabled = true;
 let timer;
+let theme = 'light';
 
 const scoreDisplay = document.getElementById('score-display');
 const movesDisplay = document.getElementById('moves-display');
@@ -62,6 +77,7 @@ function renderMaze() {
                 cell.classList.add('path');
             } else if (maze[y][x] === 2) {
                 cell.classList.add('player');
+                playerPosition = { x, y };
             } else if (maze[y][x] === 3) {
                 cell.classList.add('exit');
             } else if (maze[y][x] === 4) {
@@ -70,7 +86,6 @@ function renderMaze() {
 
             mazeElement.appendChild(cell);
         }
-        mazeElement.appendChild(document.createElement('br'));
     }
     renderMiniMap();
 }
@@ -81,18 +96,13 @@ function renderMiniMap() {
         for (let x = 0; x < maze[y].length; x++) {
             const miniCell = document.createElement('div');
             miniCell.classList.add('mini-cell');
-
-            if (maze[y][x] === 1) {
-                miniCell.classList.add('mini-wall');
-            } else if (maze[y][x] === 2) {
+            if (maze[y][x] === 2) {
                 miniCell.classList.add('mini-player');
             } else if (maze[y][x] === 3) {
                 miniCell.classList.add('mini-exit');
             }
-
             miniMapElement.appendChild(miniCell);
         }
-        miniMapElement.appendChild(document.createElement('br'));
     }
 }
 
@@ -100,102 +110,141 @@ function movePlayer(dx, dy) {
     const newX = playerPosition.x + dx;
     const newY = playerPosition.y + dy;
 
-    if (maze[newY][newX] !== 1) {
-        if (maze[newY][newX] === 3) {
-            score += 100;
-            moves++;
-            nextLevel();
-        } else {
-            maze[playerPosition.y][playerPosition.x] = 0;
-            playerPosition.x = newX;
-            playerPosition.y = newY;
-            maze[playerPosition.y][playerPosition.x] = 2;
-            score += 10;
-            moves++;
-            renderMaze();
+    if (maze[newY][newX] === 1) {
+        return; // Wall, no movement
+    } else if (maze[newY][newX] === 4) {
+        lives--;
+        livesDisplay.textContent = `Lives: ${lives}`;
+        if (lives <= 0) {
+            endGame(false);
+            return;
         }
+    } else if (maze[newY][newX] === 3) {
+        score += time * lives;
+        scoreDisplay.textContent = `Score: ${score}`;
+        nextLevel();
+        return;
     }
 
-    scoreDisplay.textContent = `Score: ${score}`;
+    maze[playerPosition.y][playerPosition.x] = 0;
+    maze[newY][newX] = 2;
+    playerPosition = { x: newX, y: newY };
+    moves++;
     movesDisplay.textContent = `Moves: ${moves}`;
-    timeDisplay.textContent = `Time: ${time}s`;
-    livesDisplay.textContent = `Lives: ${lives}`;
+    renderMaze();
 }
 
-function nextLevel() {
-    currentLevel++;
-    if (currentLevel < levels.length) {
-        maze = levels[currentLevel].maze;
-        playerPosition = { x: 1, y: 5 };
-        scoreDisplay.textContent = `Score: ${score}`;
-        movesDisplay.textContent = `Moves: ${moves}`;
-        levelDisplay.textContent = `Level: ${currentLevel + 1}`;
-        livesDisplay.textContent = `Lives: ${lives}`;
-        time = levels[currentLevel].timeLimit;
-        renderMaze();
-        messageDisplay.textContent = 'Level Up!';
-    } else {
-        messageDisplay.textContent = 'Congratulations! You completed all levels!';
-        clearInterval(timer);
+function handleKeydown(event) {
+    switch (event.key) {
+        case 'ArrowUp':
+            movePlayer(0, -1);
+            break;
+        case 'ArrowDown':
+            movePlayer(0, 1);
+            break;
+        case 'ArrowLeft':
+            movePlayer(-1, 0);
+            break;
+        case 'ArrowRight':
+            movePlayer(1, 0);
+            break;
+    }
+}
+
+function startGame() {
+    score = 0;
+    moves = 0;
+    lives = levels[currentLevel].lives;
+    time = levels[currentLevel].timeLimit;
+    scoreDisplay.textContent = `Score: ${score}`;
+    movesDisplay.textContent = `Moves: ${moves}`;
+    levelDisplay.textContent = `Level: ${currentLevel + 1}`;
+    livesDisplay.textContent = `Lives: ${lives}`;
+    timeDisplay.textContent = `Time: ${time}s`;
+    messageDisplay.textContent = '';
+    renderMaze();
+    startTimer();
+    if (musicEnabled) {
+        backgroundMusic.loop = true;
+        backgroundMusic.play();
+    }
+}
+
+function startTimer() {
+    timer = setInterval(() => {
+        time--;
+        timeDisplay.textContent = `Time: ${time}s`;
+        if (time <= 0) {
+            clearInterval(timer);
+            endGame(false);
+        }
+    }, 1000);
+}
+
+function endGame(won) {
+    clearInterval(timer);
+    messageDisplay.textContent = won ? 'You won!' : 'Game Over';
+    document.removeEventListener('keydown', handleKeydown);
+    if (musicEnabled) {
+        backgroundMusic.pause();
     }
 }
 
 function resetGame() {
     currentLevel = 0;
-    maze = levels[currentLevel].maze;
-    playerPosition = { x: 1, y: 5 };
-    score = 0;
-    moves = 0;
-    lives = levels[currentLevel].lives;
-    time = levels[currentLevel].timeLimit;
-    renderMaze();
-    messageDisplay.textContent = 'Game reset!';
-    timer = setInterval(updateTime, 1000);
+    startGame();
+    document.addEventListener('keydown', handleKeydown);
 }
 
-function updateTime() {
-    time--;
-    timeDisplay.textContent = `Time: ${time}s`;
-
-    if (time <= 0) {
-        lives--;
-        if (lives > 0) {
-            resetGame();
-            messageDisplay.textContent = 'Out of time! Try again.';
-        } else {
-            messageDisplay.textContent = 'Game Over!';
-            clearInterval(timer);
-        }
+function nextLevel() {
+    currentLevel++;
+    if (currentLevel >= levels.length) {
+        endGame(true);
+    } else {
+        startGame();
     }
 }
 
-function toggleSound() {
-    soundEnabled = !soundEnabled;
-    document.getElementById('sound-toggle').textContent = soundEnabled ? 'Mute Sound' : 'Unmute Sound';
-}
+document.getElementById('reset-button').addEventListener('click', resetGame);
+document.getElementById('next-level-button').addEventListener('click', nextLevel);
 
-function toggleMusic() {
+document.getElementById('pause-button').addEventListener('click', () => {
+    clearInterval(timer);
+    document.removeEventListener('keydown', handleKeydown);
+    document.getElementById('pause-button').style.display = 'none';
+    document.getElementById('resume-button').style.display = 'inline-block';
+});
+
+document.getElementById('resume-button').addEventListener('click', () => {
+    startTimer();
+    document.addEventListener('keydown', handleKeydown);
+    document.getElementById('pause-button').style.display = 'inline-block';
+    document.getElementById('resume-button').style.display = 'none';
+});
+
+document.getElementById('hint-button').addEventListener('click', () => {
+    alert('Hint: Try exploring all paths!');
+});
+
+document.getElementById('sound-toggle').addEventListener('click', () => {
+    soundEnabled = !soundEnabled;
+    document.getElementById('sound-toggle').textContent = soundEnabled ? 'Sound: On' : 'Sound: Off';
+});
+
+document.getElementById('music-toggle').addEventListener('click', () => {
     musicEnabled = !musicEnabled;
+    document.getElementById('music-toggle').textContent = musicEnabled ? 'Music: On' : 'Music: Off';
     if (musicEnabled) {
         backgroundMusic.play();
     } else {
         backgroundMusic.pause();
     }
-    document.getElementById('music-toggle').textContent = musicEnabled ? 'Mute Music' : 'Unmute Music';
-}
-
-document.addEventListener('keydown', (event) => {
-    if (event.key === 'ArrowUp') movePlayer(0, -1);
-    if (event.key === 'ArrowDown') movePlayer(0, 1);
-    if (event.key === 'ArrowLeft') movePlayer(-1, 0);
-    if (event.key === 'ArrowRight') movePlayer(1, 0);
 });
 
-document.getElementById('reset-button').addEventListener('click', resetGame);
-document.getElementById('next-level-button').addEventListener('click', nextLevel);
-document.getElementById('pause-button').addEventListener('click', () => clearInterval(timer));
-document.getElementById('resume-button').addEventListener('click', () => timer = setInterval(updateTime, 1000));
-document.getElementById('sound-toggle').addEventListener('click', toggleSound);
-document.getElementById('music-toggle').addEventListener('click', toggleMusic);
+document.getElementById('theme-toggle').addEventListener('click', () => {
+    theme = theme === 'light' ? 'dark' : 'light';
+    document.body.className = theme;
+    document.getElementById('theme-toggle').textContent = theme === 'light' ? 'Theme: Light' : 'Theme: Dark';
+});
 
 resetGame();
